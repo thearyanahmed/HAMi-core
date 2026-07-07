@@ -252,7 +252,7 @@ int remove_chunk_async(
     }
     /* Not tracked by libvgpu: free it for real instead of returning -1, which
      * leaked and surfaced as an "unrecognized error code". */
-    return CUDA_OVERRIDE_CALL(cuda_library_entry,cuMemFreeAsync,dptr,hStream);
+    return CUDA_OVERRIDE_CALL(cuda_library_entry, cuMemFreeAsync, dptr, hStream);
 }
 
 int free_raw_async(CUdeviceptr dptr, CUstream hStream) {
@@ -266,33 +266,35 @@ int free_raw_async(CUdeviceptr dptr, CUstream hStream) {
  * limit. Call with mutex held. */
 static int account_async_chunk(allocated_list_entry *e, size_t size, CUmemoryPool pool) {
     size_t poollimit;
-    CUresult res = CUDA_OVERRIDE_CALL(cuda_library_entry,cuMemPoolGetAttribute,pool,CU_MEMPOOL_ATTR_RESERVED_MEM_HIGH,&poollimit);
+    CUresult res = CUDA_OVERRIDE_CALL(cuda_library_entry, cuMemPoolGetAttribute, pool,
+                                      CU_MEMPOOL_ATTR_RESERVED_MEM_HIGH, &poollimit);
     if (res != CUDA_SUCCESS) {
-        LOG_ERROR("cuMemPoolGetAttribute failed res=%d",res);
+        LOG_ERROR("cuMemPoolGetAttribute failed res=%d", res);
         return res;
     }
     if (poollimit != 0) {
-        if (poollimit> device_allocasync->limit) {
-            size_t allocsize = (poollimit-device_allocasync->limit < size)? poollimit-device_allocasync->limit : size;
+        if (poollimit > device_allocasync->limit) {
+            size_t allocsize = (poollimit - device_allocasync->limit < size)
+                               ? poollimit - device_allocasync->limit : size;
             add_gpu_device_memory_usage(getpid(), e->entry->dev, allocsize, 2);
-            device_allocasync->limit=device_allocasync->limit+allocsize;
-            e->entry->length=allocsize;
-        }else{
-            e->entry->length=0;
+            device_allocasync->limit = device_allocasync->limit + allocsize;
+            e->entry->length = allocsize;
+        } else {
+            e->entry->length = 0;
         }
-    }else{
-        e->entry->length=0;
+    } else {
+        e->entry->length = 0;
     }
-    LIST_ADD(device_allocasync,e);
+    LIST_ADD(device_allocasync, e);
     return 0;
 }
 
 int add_chunk_async(CUdeviceptr *address, size_t size, CUstream hStream) {
-    size_t addr=0;
+    size_t addr = 0;
     CUresult res = CUDA_SUCCESS;
     CUdevice dev;
     cuCtxGetDevice(&dev);
-    if (oom_check(dev,size))
+    if (oom_check(dev, size))
         return CUDA_ERROR_OUT_OF_MEMORY;
 
     allocated_list_entry *e;
@@ -314,18 +316,18 @@ int add_chunk_async(CUdeviceptr *address, size_t size, CUstream hStream) {
 }
 
 int add_chunk_from_pool_async(CUdeviceptr *address, size_t size, CUmemoryPool pool, CUstream hStream) {
-    size_t addr=0;
+    size_t addr = 0;
     CUresult res = CUDA_SUCCESS;
     CUdevice dev;
     cuCtxGetDevice(&dev);
-    if (oom_check(dev,size))
+    if (oom_check(dev, size))
         return CUDA_ERROR_OUT_OF_MEMORY;
 
     allocated_list_entry *e;
     INIT_ALLOCATED_LIST_ENTRY(e, addr, size, dev);
-    res = CUDA_OVERRIDE_CALL(cuda_library_entry,cuMemAllocFromPoolAsync,&e->entry->address,size,pool,hStream);
+    res = CUDA_OVERRIDE_CALL(cuda_library_entry, cuMemAllocFromPoolAsync, &e->entry->address, size, pool, hStream);
     if (res != CUDA_SUCCESS) {
-        LOG_ERROR("cuMemAllocFromPoolAsync failed res=%d",res);
+        LOG_ERROR("cuMemAllocFromPoolAsync failed res=%d", res);
         return res;
     }
     *address = e->entry->address;
@@ -344,7 +346,7 @@ int allocate_async_raw(CUdeviceptr *dptr, size_t size, CUstream hStream) {
 int allocate_from_pool_async_raw(CUdeviceptr *dptr, size_t size, CUmemoryPool pool, CUstream hStream) {
     int tmp;
     pthread_mutex_lock(&mutex);
-    tmp = add_chunk_from_pool_async(dptr,size,pool,hStream);
+    tmp = add_chunk_from_pool_async(dptr, size, pool, hStream);
     pthread_mutex_unlock(&mutex);
     return tmp;
 }

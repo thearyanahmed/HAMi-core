@@ -687,8 +687,8 @@ CUresult cuMemPoolDestroy(CUmemoryPool pool) {
 }
 
 CUresult cuMemAllocFromPoolAsync(CUdeviceptr *dptr, size_t bytesize, CUmemoryPool pool, CUstream hStream) {
-    LOG_DEBUG("cuMemAllocFromPoolAsync:%ld",bytesize);
-    return allocate_from_pool_async_raw(dptr,bytesize,pool,hStream);
+    LOG_DEBUG("cuMemAllocFromPoolAsync:%ld", bytesize);
+    return allocate_from_pool_async_raw(dptr, bytesize, pool, hStream);
 }
 
 CUresult cuMemPoolExportToShareableHandle(void *handle_out, CUmemoryPool pool, CUmemAllocationHandleType handleType, unsigned long long flags) {
