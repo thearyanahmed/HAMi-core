@@ -162,6 +162,7 @@ int free_raw(CUdeviceptr dptr);
 int add_chunk_only(CUdeviceptr address, size_t size, CUdevice dev);
 int remove_chunk_only(CUdeviceptr address);
 int allocate_async_raw(CUdeviceptr *dptr, size_t size, CUstream hStream);
+int allocate_from_pool_async_raw(CUdeviceptr *dptr, size_t size, CUmemoryPool pool, CUstream hStream);
 int free_raw_async(CUdeviceptr dptr, CUstream hStream);
 
 // Checks memory type
