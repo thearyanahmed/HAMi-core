@@ -158,6 +158,8 @@ typedef struct nvmlProcessUtilizationSample_st {
   unsigned int decUtil;          //!< Decoder Util Value
 } nvmlProcessUtilizationSample_t;
 
+#include "include/nvml_processes_utilization_subset.h"
+
 /**
  * ECC counter types.
  *
