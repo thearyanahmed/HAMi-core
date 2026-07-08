@@ -6,6 +6,7 @@ Welcome to HAMi-core!
 - [Before you get started](#before-you-get-started)
   - [Code of Conduct](#code-of-conduct)
   - [Community Expectations](#community-expectations)
+  - [Contribution Gates](#contribution-gates)
 - [Getting started](#getting-started)
 - [Your First Contribution](#your-first-contribution)
   - [Find something to work on](#find-something-to-work-on)
@@ -25,6 +26,22 @@ Please make sure to read and observe our [Code of Conduct](https://github.com/Pr
 ## Community Expectations
 
 HAMi is a community project driven by its community which strives to promote a healthy, friendly and productive environment.
+
+## Contribution Gates
+
+The following rules are enforced on all contributions.
+
+**1. Author-understanding gate.** If a maintainer asks how a change works and the author cannot explain it, the PR is closed. Repeated cases may result in interaction limits.
+
+**2. Hardware validation.** Changes affecting device allocation or in-container isolation must be validated on real GPU hardware before submitting. Record in the PR what was tested, the device type, and the driver version.
+
+**3. Scope and commit messages.** Large AI-generated PRs are not accepted. For AI-assisted contributions, anything beyond a small fix must start as an issue and be split into reviewable commits. Write your own commit messages; AI-generated commit messages are not accepted.
+
+**4. Review replies.** The reply you post must be written by you and must address the specific point raised. Verbatim or canned AI replies, or replies that do not engage the comment, lead to the PR being closed.
+
+**5. Commit trailer hygiene.** Do not list AI as a co-author. No `assisted-by`, `co-developed-by`, or similar trailers. Disclosure belongs in the PR description only.
+
+**6. AI-generated comments.** Do not post AI-generated comments in review threads. Remove any filler or redundant AI-generated text before posting. Exceptions apply only when the underlying technical assessment is entirely your own and AI is used solely to assist with language translation or formatting, provided you have fully verified and edited the output.
 
 # Getting started
 
