@@ -55,6 +55,8 @@ typedef enum {
   NVML_OVERRIDE_ENUM(nvmlDeviceGetPciInfo),
   /** nvmlDeviceGetProcessUtilization */
   NVML_OVERRIDE_ENUM(nvmlDeviceGetProcessUtilization),
+  /** nvmlDeviceGetProcessesUtilizationInfo */
+  NVML_OVERRIDE_ENUM(nvmlDeviceGetProcessesUtilizationInfo),
   /** nvmlDeviceGetCount */
   NVML_OVERRIDE_ENUM(nvmlDeviceGetCount),
   /** nvmlDeviceClearAccountingPids */

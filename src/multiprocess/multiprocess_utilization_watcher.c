@@ -22,7 +22,7 @@
 #include "multiprocess/multiprocess_memory_limit.h"
 #include "multiprocess/multiprocess_utilization_watcher.h"
 #include "include/log_utils.h"
-#include "include/nvml_override.h"
+#include "include/nvml_processes_utilization_subset.h"
 
 
 static int g_sm_num[CUDA_DEVICE_MAX_COUNT];
@@ -121,6 +121,62 @@ unsigned int cuda_to_nvml_map(unsigned int cudadev){
     return cuda_to_nvml_map_array[cudadev];
 }
 
+static nvmlReturn_t get_process_utilization_samples(
+    nvmlDevice_t device,
+    uint64_t last_seen,
+    nvmlProcessUtilizationSample_t *out,
+    unsigned int *out_count) {
+  unsigned int processes_num = *out_count;
+  nvmlReturn_t res = nvmlDeviceGetProcessUtilization(
+      device, out, &processes_num, last_seen);
+  int i;
+
+  if (res == NVML_SUCCESS) {
+    *out_count = processes_num;
+    return NVML_SUCCESS;
+  }
+  if (res != NVML_ERROR_NOT_SUPPORTED) {
+    return res;
+  }
+
+  nvmlProcessUtilizationInfo_v1_t local_samples[SHARED_REGION_MAX_PROCESS_NUM];
+  nvmlProcessesUtilizationInfo_v1_t info;
+  info.version = nvmlProcessesUtilizationInfo_v1;
+  info.processSamplesCount = 0;
+  info.lastSeenTimeStamp = last_seen;
+  info.procUtilArray = NULL;
+
+  res = nvmlDeviceGetProcessesUtilizationInfo(
+      device, (nvmlProcessesUtilizationInfo_t *)&info);
+  if (res == NVML_ERROR_INSUFFICIENT_SIZE) {
+    info.procUtilArray = local_samples;
+    info.processSamplesCount = SHARED_REGION_MAX_PROCESS_NUM;
+    res = nvmlDeviceGetProcessesUtilizationInfo(
+        device, (nvmlProcessesUtilizationInfo_t *)&info);
+  }
+  if (res == NVML_ERROR_NOT_FOUND) {
+    *out_count = 0;
+    return NVML_SUCCESS;
+  }
+  if (res != NVML_SUCCESS) {
+    return res;
+  }
+
+  if (info.processSamplesCount > SHARED_REGION_MAX_PROCESS_NUM) {
+    info.processSamplesCount = SHARED_REGION_MAX_PROCESS_NUM;
+  }
+  for (i = 0; i < (int)info.processSamplesCount; i++) {
+    out[i].pid = local_samples[i].pid;
+    out[i].timeStamp = local_samples[i].timeStamp;
+    out[i].smUtil = local_samples[i].smUtil;
+    out[i].memUtil = local_samples[i].memUtil;
+    out[i].encUtil = local_samples[i].encUtil;
+    out[i].decUtil = local_samples[i].decUtil;
+  }
+  *out_count = info.processSamplesCount;
+  return NVML_SUCCESS;
+}
+
 int setspec() {
     unsigned int device_count;
 
@@ -175,7 +231,8 @@ int get_used_gpu_utilization(int *userutil,int *sysprocnum) {
       microsec = (cur.tv_sec - 1) * 1000UL * 1000UL + cur.tv_usec;
       nvmlProcessUtilizationSample_t processes_sample[SHARED_REGION_MAX_PROCESS_NUM];
       unsigned int processes_num = SHARED_REGION_MAX_PROCESS_NUM;
-      nvmlReturn_t res2 = nvmlDeviceGetProcessUtilization(device, processes_sample, &processes_num, microsec);
+      nvmlReturn_t res2 = get_process_utilization_samples(
+          device, microsec, processes_sample, &processes_num);
 
       // Now acquire lock only for the brief period needed to update shared memory
       lock_shrreg();

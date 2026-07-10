@@ -389,6 +389,8 @@ void* __dlsym_hook_section_nvml(void* handle, const char* symbol) {
     DLSYM_HOOK_FUNC(nvmlDeviceGetPciInfo);
     /** nvmlDeviceGetProcessUtilization */
     DLSYM_HOOK_FUNC(nvmlDeviceGetProcessUtilization);
+    /** nvmlDeviceGetProcessesUtilizationInfo */
+    DLSYM_HOOK_FUNC(nvmlDeviceGetProcessesUtilizationInfo);
     /** nvmlDeviceGetCount */
     DLSYM_HOOK_FUNC(nvmlDeviceGetCount);
     /** nvmlDeviceClearAccountingPids */

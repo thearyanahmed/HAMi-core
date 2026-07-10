@@ -1,6 +1,7 @@
 #include <pthread.h>
 #include "include/nvml_prefix.h"
 #include "include/libnvml_hook.h"
+#include "include/nvml_processes_utilization_subset.h"
 #include "include/utils.h"
 
 extern entry_t cuda_library_entry[];
@@ -59,6 +60,17 @@ nvmlReturn_t nvmlDeviceGetProcessUtilization(
   return NVML_OVERRIDE_CALL_NO_LOG(nvml_library_entry, nvmlDeviceGetProcessUtilization,
                          device, utilization, processSamplesCount,
                          lastSeenTimeStamp);
+}
+
+nvmlReturn_t nvmlDeviceGetProcessesUtilizationInfo(
+    nvmlDevice_t device, nvmlProcessesUtilizationInfo_t *processesUtilInfo) {
+  driver_sym_t entry = NVML_FIND_ENTRY(nvml_library_entry,
+                                       nvmlDeviceGetProcessesUtilizationInfo);
+  if (entry == NULL) {
+    return NVML_ERROR_NOT_SUPPORTED;
+  }
+  typedef nvmlReturn_t (*sym_t)(nvmlDevice_t, nvmlProcessesUtilizationInfo_t *);
+  return ((sym_t)entry)(device, processesUtilInfo);
 }
 /*
 nvmlReturn_t nvmlDeviceGetCount_v2(unsigned int *deviceCount) {
